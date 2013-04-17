@@ -1,62 +1,65 @@
 package ar.edu.unq.concurbattle.model;
 
+import static ar.edu.unq.concurbattle.server.ServerProtocol.GET_CHANNEL_PACKAGE;
+
 import java.io.Serializable;
 
-import ar.edu.unq.concurbattle.comunication.Channel;
+import ar.edu.unq.concurbattle.comunication.DualChannel;
+import ar.edu.unq.concurbattle.server.ChannelPackage;
 import ar.edu.unq.concurbattle.server.GameServer;
 import ar.edu.unq.concurbattle.server.ServerProtocol;
-import ar.edu.unq.concurbattle.server.ServerProtocol.ServerRequestCommand;
+import ar.edu.unq.concurbattle.server.ServerRequest;
 
 public abstract class Entity implements Serializable, Runnable {
 	private static final long serialVersionUID = 8519330767655233323L;
-	private final Channel<ServerProtocol> serverChannel;
-	private final Channel<Boolean> serverLock;
-	private Channel<ServerProtocol> channel;
-	private boolean isAlive = true;
+	private final DualChannel<ServerRequest> serverChannel;
+	private ChannelPackage channelPackage;
 
 	public Entity() {
-		this.serverChannel = new Channel<>(GameServer.CHANNEL_SERVER);
-		this.serverLock = new Channel<>(GameServer.LOCK_CHANNEL_SERVER);
+		this.serverChannel = GameServer.createServerCommunicationChannel();
+		this.createChannelPackage();
 	}
 
-	private Channel<ServerProtocol> createChannelFromServer() {
-		final ServerRequestCommand command = ServerRequestCommand.GENERATE_CHANNEL;
-		this.sendServerCommand(new ServerProtocol(command));
-		final ServerProtocol answer = this.receiveServerMessage();
-		final Integer id = answer.<Integer> getData();
-		return new Channel<ServerProtocol>(id);
-	}
-
-	protected void die() {
-		this.isAlive = false;
+	private void createChannelPackage() {
+		this.serverLock();
+		this.sendToServer(GET_CHANNEL_PACKAGE, null);
+		this.channelPackage = (ChannelPackage) this.receiveFromServer()
+				.getData();
+		this.serverRelease();
 	}
 
 	protected abstract void doLoop();
 
-	protected void lockServer() {
-		this.serverLock.receive();
+	protected ChannelPackage getChannelPackage() {
+		return this.channelPackage;
 	}
 
-	protected ServerProtocol receiveServerMessage() {
-		return this.serverChannel.receive();
-	}
+	protected void initialize() {
 
-	protected void releaseServer() {
-		this.serverLock.send(true);
+	};
+
+	protected ServerRequest receiveFromServer() {
+		return this.serverChannel.getFromServer();
 	}
 
 	@Override
 	public void run() {
-		this.lockServer();
-		this.channel = this.createChannelFromServer();
-		this.releaseServer();
-		while (!this.isAlive) {
+		this.initialize();
+		while (true) {
 			this.doLoop();
 		}
 	}
 
-	protected void sendServerCommand(final ServerProtocol command) {
-		this.serverChannel.send(command);
+	protected void sendToServer(final ServerProtocol command,
+			final Serializable data) {
+		this.serverChannel.sendToServer(new ServerRequest(command, data));
 	}
 
+	protected void serverLock() {
+		this.serverChannel.lock();
+	}
+
+	protected void serverRelease() {
+		this.serverChannel.release();
+	}
 }

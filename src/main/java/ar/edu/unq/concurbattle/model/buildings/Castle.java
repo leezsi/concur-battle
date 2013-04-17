@@ -1,17 +1,17 @@
 package ar.edu.unq.concurbattle.model.buildings;
 
+import ar.edu.unq.concurbattle.model.Side;
 import ar.edu.unq.concurbattle.model.person.Person;
-import ar.edu.unq.concurbattle.model.person.Person.Side;
 
 public class Castle extends AbstractBuilding {
 	private static final long serialVersionUID = -2889521192177910267L;
 
-	public Castle() {
-
+	public Castle(final Side side) {
+		super(side);
 	}
 
-	public void createPerson(final Side side) {
-		this.addPerson(new Person(side));
+	public void createPerson() {
+		this.addPerson(new Person(this.getSide()));
 	}
 
 	@Override
