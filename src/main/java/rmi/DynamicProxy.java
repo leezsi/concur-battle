@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
@@ -30,75 +29,59 @@ public class DynamicProxy implements InvocationHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T getProxy(final Class<T> targetInterface,
-			final int channel1, final int channel2) {
+			final DualChannel<RMIRequest> channel) {
 		final ClassLoader loader = ClassLoader.getSystemClassLoader();
 		final Class<?>[] interfaces = new Class<?>[] { targetInterface };
-		final InvocationHandler handler = new DynamicProxy(channel1, channel2);
+		final InvocationHandler handler = new DynamicProxy(channel);
 		return (T) Proxy.newProxyInstance(loader, interfaces, handler);
 	}
 
-	private final DualChannel<RMIRequest> stream;
+	private final DualChannel<RMIRequest> channel;
 
-	private DynamicProxy(final int channel1, final int channel2) {
-		this.stream = new DualChannel<RMIRequest>()//
-				.setClientChannel(channel1)//
-				.setServerChannel(channel2);
-
-	}
-
-	private void ackOkOrBoom() {
-		final RMIRequest retrive = this.getFromServer();
-		switch (retrive.getCommand()) {
-		case ACK:
-			DynamicProxy.LOG.debug("reciving ACK");
-			break;
-		case ERROR:
-			final Throwable exception = (Throwable) retrive.getData();
-			DynamicProxy.LOG.debug("ERROR " + exception.getMessage());
-			throw new RMIProxyRuntimeException(exception);
-		default:
-			System.out.println("ERROR  [" + retrive.getCommand() + "]");
-			break;
-		}
-	}
-
-	private RMIRequest getFromServer() {
-		return this.stream.getFromServer();
+	private DynamicProxy(final DualChannel<RMIRequest> channel) {
+		this.channel = channel;
 	}
 
 	@Override
 	public Object invoke(final Object proxy, final Method method,
 			final Object[] args) throws Throwable {
 		//
-		DynamicProxy.LOG.debug("Initializating comunications");
-		this.sendToServer(RMICommand.START_TRANSMITION);
-		this.ackOkOrBoom();
-		//
-		final String methodName = method.getName();
-		DynamicProxy.LOG.debug("sending method name [" + methodName + "]");
-		this.sendToServer(RMICommand.METHOD_NAME, methodName);
-		this.ackOkOrBoom();
-		//
-		DynamicProxy.LOG.debug("Sending arguments" + Arrays.toString(args));
-		this.sendToServer(RMICommand.SEND_PARAMETERS, args);
-		this.ackOkOrBoom();
-		//
-		DynamicProxy.LOG.debug("Sending execute");
-		this.sendToServer(RMICommand.EXECUTE);
-		this.ackOkOrBoom();
-		//
-		DynamicProxy.LOG.debug("reciving result");
-		final RMIRequest result = this.getFromServer();
-		//
-		DynamicProxy.LOG.debug("Ending transmition");
-		DynamicProxy.LOG.debug("RESULTADO "
-				+ ((Serializable[]) result.getData())[0]);
-		return ((Serializable[]) result.getData())[0];
+		this.lockServer();
+		final RMIMethod data = new RMIMethod(method, args);
+		DynamicProxy.LOG.debug("Sending command [START_TRANSMITION]");
+		this.sendToServer(RMICommand.START_TRANSMITION, data);
+		final RMIRequest request = this.channel.getFromServer();
+		Serializable value = null;
+		switch (request.getCommand()) {
+		case RESULT:
+			value = request.getData();
+			DynamicProxy.LOG.debug("Reciving command [RESULT] with data ["
+					+ value + "]");
+			break;
+		case ERROR:
+			final Throwable error = (Throwable) request.getData();
+			DynamicProxy.LOG.error("Reciving [ERROR]:\n\t "
+					+ error.getMessage());
+			throw error;
+		default:
+			DynamicProxy.LOG.error("Unexpected commend");
+			throw new RMIProxyRuntimeException("Unexpecting command ["
+					+ request.getCommand() + "]");
+		}
+		this.release();
+		return value;
 	}
 
-	private void sendToServer(final RMICommand command, final Object... data) {
-		this.stream.sendToServer(new RMIRequest(command, data));
+	private void lockServer() {
+		this.channel.lock();
+	}
 
+	private void release() {
+		this.channel.release();
+	}
+
+	private void sendToServer(final RMICommand command, final Serializable data) {
+		this.channel.sendToServer(new RMIRequest(command, data));
 	}
 
 }

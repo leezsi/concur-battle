@@ -1,6 +1,8 @@
 package ar.edu.unq.concurbattle.proxy.test;
 
 import rmi.RMIInvoker;
+import rmi.RMIRequest;
+import ar.edu.unq.concurbattle.comunication.DualChannel;
 
 public class Person implements IPerson {
 
@@ -8,7 +10,9 @@ public class Person implements IPerson {
 	private String value1;
 
 	public Person() {
-		new RMIInvoker(this, 1, 2).start();
+		final DualChannel<RMIRequest> channel = new DualChannel<RMIRequest>();
+		channel.setClientChannel(1).setServerChannel(2).setLockChannel(3);
+		new RMIInvoker(channel).on(this);
 	}
 
 	@Override
