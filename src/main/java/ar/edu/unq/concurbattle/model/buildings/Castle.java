@@ -8,6 +8,7 @@ public class Castle extends AbstractBuilding {
 
 	public Castle(final Side side) {
 		super(side);
+		this.createPerson();
 	}
 
 	public void createPerson() {

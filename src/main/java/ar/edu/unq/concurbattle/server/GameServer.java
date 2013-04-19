@@ -1,9 +1,14 @@
 package ar.edu.unq.concurbattle.server;
 
+import static ar.edu.unq.concurbattle.model.Side.BAD;
+import static ar.edu.unq.concurbattle.model.Side.GOOD;
+
 import java.io.Serializable;
 
 import ar.edu.unq.concurbattle.comunication.DualChannel;
 import ar.edu.unq.concurbattle.exception.ConcurBattleException;
+import ar.edu.unq.concurbattle.model.buildings.Castle;
+import ar.edu.unq.concurbattle.model.buildings.Town;
 
 public class GameServer implements Runnable {
 
@@ -38,6 +43,30 @@ public class GameServer implements Runnable {
 	}
 
 	private void populateGame() {
+		final Castle goodCastle = new Castle(GOOD);
+		final Castle badCastle = new Castle(BAD);
+		final Town quilmes = new Town("Quilmes");
+		final Town berazategui = new Town("Berazategui");
+		final Town caba = new Town("C.A.B.A");
+		final Town lomas = new Town("Lomas de Zamora");
+		final Town avellaneda = new Town("Avellaneda");
+		final Town laPlata = new Town("La Plata");
+		final Town hudson = new Town("Hudson");
+		goodCastle//
+				.createPathTo(laPlata)//
+				.createPathTo(hudson)//
+				.createPathTo(berazategui)//
+				.createPathTo(badCastle);
+		goodCastle.createPathTo(quilmes)//
+				.createPathTo(avellaneda)//
+				.createPathTo(lomas)//
+				.createPathTo(badCastle);
+		goodCastle.createPathTo(caba)//
+				.createPathTo(badCastle);
+		berazategui//
+				.createPathTo(quilmes)//
+				.createPathTo(lomas);
+		laPlata.createPathTo(caba);
 
 	}
 

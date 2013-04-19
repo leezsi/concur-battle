@@ -42,7 +42,7 @@ public class Utils {
 	}
 
 	/** Generates a pseudorandom number between 0.0 and 1.0. */
-	static double random() {
+	public static double random() {
 		return Math.random();
 	}
 
@@ -65,7 +65,7 @@ public class Utils {
 	 * @throws RuntimeException
 	 *             wrapping an IOException.
 	 */
-	static String readLine(final InputStream inputStream) {
+	public static String readLine(final InputStream inputStream) {
 		String result = null;
 		try {
 			final BufferedReader reader = new BufferedReader(

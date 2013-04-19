@@ -1,6 +1,7 @@
 package ar.edu.unq.concurbattle.model.buildings;
 
 import ar.edu.unq.concurbattle.model.Entity;
+import ar.edu.unq.concurbattle.model.person.Person;
 
 public class Path extends Entity {
 
@@ -36,6 +37,11 @@ public class Path extends Entity {
 
 	public AbstractBuilding getCorner2() {
 		return this.corner2;
+	}
+
+	public void personMove(final Person person) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

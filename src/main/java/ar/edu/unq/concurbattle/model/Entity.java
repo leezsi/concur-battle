@@ -10,7 +10,7 @@ import ar.edu.unq.concurbattle.server.GameServer;
 import ar.edu.unq.concurbattle.server.ServerProtocol;
 import ar.edu.unq.concurbattle.server.ServerRequest;
 
-public abstract class Entity implements Serializable, Runnable {
+public abstract class Entity implements Serializable, Runnable, Channeable {
 	private static final long serialVersionUID = 8519330767655233323L;
 	private final DualChannel<ServerRequest> serverChannel;
 	private ChannelPackage channelPackage;
@@ -30,7 +30,8 @@ public abstract class Entity implements Serializable, Runnable {
 
 	protected abstract void doLoop();
 
-	protected ChannelPackage getChannelPackage() {
+	@Override
+	public ChannelPackage getChannelPackage() {
 		return this.channelPackage;
 	}
 

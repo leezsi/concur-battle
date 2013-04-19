@@ -31,10 +31,11 @@ public abstract class AbstractBuilding extends Entity {
 		this.side = this.side.rival();
 	}
 
-	public void createPathTo(final Town town) {
-		final Path path = new Path().corner1(this).corner2(town);
+	public AbstractBuilding createPathTo(final AbstractBuilding building) {
+		final Path path = new Path().corner1(this).corner2(building);
 		this.addPath(path);
-		town.addPath(path);
+		building.addPath(path);
+		return building;
 	}
 
 	protected Side getSide() {

@@ -9,12 +9,15 @@ public class Town extends AbstractBuilding {
 
 	private static final long serialVersionUID = -6645511197344962484L;
 	private final List<Path> paths;
+	private final String name;
 
-	public Town(final Side side) {
-		super(side);
+	public Town(final String name) {
+		super(Side.NEUTRAL);
+		this.name = name;
 		this.paths = new ArrayList<Path>();
 	}
 
+	@Override
 	public void addPath(final Path path) {
 		this.paths.add(path);
 	}
@@ -23,6 +26,10 @@ public class Town extends AbstractBuilding {
 	protected void doLoop() {
 		// TODO Auto-generated method stub
 
+	}
+
+	public String getName() {
+		return this.name;
 	}
 
 }

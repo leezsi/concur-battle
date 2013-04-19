@@ -12,7 +12,14 @@ public enum Side {
 		public Side rival() {
 			return GOOD;
 		}
+	},
+	NEUTRAL {
+		@Override
+		public Side rival() {
+			return NEUTRAL;
+		}
 	};
 
 	public abstract Side rival();
+
 }

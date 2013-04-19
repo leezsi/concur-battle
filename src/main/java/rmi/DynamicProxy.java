@@ -8,10 +8,15 @@ import java.lang.reflect.Proxy;
 import org.apache.log4j.Logger;
 
 import ar.edu.unq.concurbattle.comunication.DualChannel;
+import ar.edu.unq.concurbattle.model.Channeable;
 
 public class DynamicProxy implements InvocationHandler {
 
 	private static Logger LOG = Logger.getLogger(DynamicProxy.class);
+
+	public static <T> T _(final Channeable object, final Class<T> interfaze) {
+		return object.getChannelPackage().getProxy(interfaze);
+	}
 
 	/**
 	 * {@code Iperson personProxy= DynamicProxy.getProxy(IPerson.class,1,2);}
