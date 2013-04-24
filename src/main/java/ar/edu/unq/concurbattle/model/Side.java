@@ -1,25 +1,93 @@
 package ar.edu.unq.concurbattle.model;
 
+import java.util.List;
+
+import ar.edu.unq.concurbattle.model.buildings.Town;
+import ar.edu.unq.concurbattle.model.person.Warrior;
+
 public enum Side {
-	GOOD {
+
+	gold {
 		@Override
-		public Side rival() {
-			return BAD;
+		public void addIn(final Warrior warrior, final Town town) {
+			town.addGoldWarrior(warrior);
+
+		}
+
+		@Override
+		public List<Warrior> getWarriors(final Town town) {
+			return town.getGoldPopulation();
+		}
+
+		@Override
+		public Side opposite() {
+			return silver;
+
+		}
+
+		@Override
+		public void removeFrom(final Warrior warrior, final Town town) {
+			town.removeGoldWarrior(warrior);
+
 		}
 	},
-	BAD {
+	silver {
 		@Override
-		public Side rival() {
-			return GOOD;
+		public void addIn(final Warrior warrior, final Town town) {
+			town.addSilverWarrior(warrior);
+		}
+
+		@Override
+		public List<Warrior> getWarriors(final Town town) {
+			return town.getSilverPopulation();
+		}
+
+		@Override
+		public Side opposite() {
+			return gold;
+
+		}
+
+		@Override
+		public void removeFrom(final Warrior warrior, final Town town) {
+			town.removeSilverWarrior(warrior);
 		}
 	},
-	NEUTRAL {
+	neutral {
 		@Override
-		public Side rival() {
-			return NEUTRAL;
+		public void addIn(final Warrior warrior, final Town town) {
+			// method stub
+
+		}
+
+		@Override
+		public List<Warrior> getWarriors(final Town town) {
+			// method stub
+			return null;
+		}
+
+		@Override
+		public Side opposite() {
+			// method stub
+			return null;
+		}
+
+		@Override
+		public void removeFrom(final Warrior warrior, final Town town) {
+			// method stub
+
 		}
 	};
 
-	public abstract Side rival();
+	public abstract void addIn(Warrior warrior, Town town);
 
+	public abstract List<Warrior> getWarriors(Town town);
+
+	public List<Warrior> oponents(final Town town) {
+		return this.opposite().getWarriors(town);
+	}
+
+	public abstract Side opposite();
+
+	public abstract void removeFrom(Warrior warrior, Town town);
 }

@@ -1,6 +1,7 @@
 package ar.edu.unq.tpi.concurbattles;
 
 import java.awt.Rectangle;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,6 +10,8 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 
 import ar.edu.unq.concurbattle.comunication.Channel;
+import ar.edu.unq.concurbattle.comunication.Utils;
+import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
 import buoy.event.CommandEvent;
 import buoy.event.WindowClosingEvent;
 import buoy.widget.BFrame;
@@ -48,17 +51,14 @@ public class ConcurBattles {
 	 * Entry point of the program. Requires a command line argument with the id
 	 * of the channel to be used.
 	 */
-	public static void main(final String[] args) throws InterruptedException {
-		if (args.length < 2) {
-			System.err.println("Usage error. Concur Battles GUI requires the"
-					+ " input and output channel ids as arguments.");
-		}
+	public ConcurBattles() {
 
 		final Channel<String> inputChannel = new Channel<String>(
-				Integer.parseInt(args[0]));
+				ConstsAndUtils.GUI_SEND_CHANNEL);
 		final Channel<String> outputChannel = new Channel<String>(
-				Integer.parseInt(args[1]));
+				ConstsAndUtils.GUI_RECEIVE_CHANNEL);
 		final Map<String, Coordinate> map = new HashMap<String, ConcurBattles.Coordinate>();
+
 		final Map<String, BLabel> units = new HashMap<String, BLabel>();
 
 		// window
@@ -82,13 +82,15 @@ public class ConcurBattles {
 		avalon.addEventLink(CommandEvent.class, new Object() {
 			@SuppressWarnings("unused")
 			void processEvent() {
-				ConcurBattles.setBackground(container, "resources/Avalon.png");
+				ConcurBattles.this.setBackground(container,
+						Utils.resourceURL("maps/Avalon.png"));
 				units.clear();
-				ConcurBattles
+				ConcurBattles.this
 						.parseCities(map,
 								" 1 235 345 \n 2 290 185 \n 3 355 115 \n 4 220 180 \n 5 165 225 \n");
-				outputChannel
-						.send(" 1 2 5 \n 2 1 3 4 \n 3 2 \n 4 2 5 \n 5 1 4 \n");
+				outputChannel.send("1:5=1:2,5;2:3,4;3:4;4:5;5");
+				// outputChannel.send("1:5=1:2,5;2:1,3,4;3:2;4:2,5;5:1,4");
+				// "Avalon: 1 2 5 \n 2 1 3 4 \n 3 2 \n 4 2 5 \n 5 1 4 \n"
 				window.pack();
 			}
 		});
@@ -98,17 +100,17 @@ public class ConcurBattles {
 		diaspola.addEventLink(CommandEvent.class, new Object() {
 			@SuppressWarnings("unused")
 			void processEvent() {
-				ConcurBattles
-						.setBackground(container, "resources/Diaspola.png");
+				ConcurBattles.this.setBackground(container,
+						Utils.resourceURL("maps/Diaspola.png"));
 				units.clear();
-				ConcurBattles
+				ConcurBattles.this
 						.parseCities(
 								map,
 								" 1 390 265 \n 2 355 220 \n 3 320 315 \n 4 410 100 \n "
 										+ "5 260 130 \n 6 225 305 \n 7 50 360 \n 8 130 225 \n 9 100 120 \n");
-				outputChannel
-						.send(" 1 2 3 \n 2 1 4 5 \n 3 1 6 \n 4 2 \n 5 2 9 \n "
-								+ "6 7 8 \n 7 6 8 \n 8 6 7 9 \n 9 5 8 \n");
+				outputChannel.send("1:9=1:2,3;2:4,5;3:6;4;5:9;6:7,8;7:8;8:9;9");
+				// "Diaspora: 1 2 3 \n 2 1 4 5 \n 3 1 6 \n 42 \n 5 2 9 \n "
+				// + "6 7 8 \n 7 6 8 \n 8 6 7 9 \n 9 5 8 \n"
 				window.pack();
 			}
 		});
@@ -118,17 +120,21 @@ public class ConcurBattles {
 		sharom.addEventLink(CommandEvent.class, new Object() {
 			@SuppressWarnings("unused")
 			void processEvent() {
-				ConcurBattles.setBackground(container, "resources/Sharom.png");
+				ConcurBattles.this.setBackground(container,
+						Utils.resourceURL("maps/Sharom.png"));
 				units.clear();
-				ConcurBattles
+				ConcurBattles.this
 						.parseCities(
 								map,
 								" 1 400 50 \n 2 450 140 \n 3 345 145 \n 4 195 100 \n "
 										+ "5 465 265 \n 6 230 305 \n 7 130 170 \n 8 290 385 \n 9 320 465 \n "
 										+ "10 20 385 \n 11 125 405 \n");
-				outputChannel
-						.send(" 1 2 3 4 \n 2 1 5 \n 3 1 6 \n 4 1 7 \n 5 2 8 9 \n "
-								+ "6 3 11 \n 7 4 11 \n 8 5 9 11 \n 9 5 8 11 \n 10 11 \n 11 6 7 8 9 10 \n");
+
+				outputChannel.send("1:11=1:2,3,4;2:5;3:6;4:7;5:8,9;"
+						+ "6:11;7:11;8:9,11;9:11;10");
+				// "Sharom: 1 2 3 4 \n 2 1 5 \n 3 1 6 \n 4 1 7 \n 5 2 8 9 \n "
+				// +
+				// "6 3 11 \n 7 4 11 \n 8 5 9 11 \n 9 5 8 11 \n 10 11 \n 11 6 7 8 9 10 \n"
 				window.pack();
 			}
 		});
@@ -153,7 +159,7 @@ public class ConcurBattles {
 
 		window.setVisible(true);
 
-		ConcurBattles.startGame(container, inputChannel, map, units);
+		this.startGame(container, inputChannel, map, units);
 	}
 
 	/**
@@ -166,8 +172,8 @@ public class ConcurBattles {
 	 * @param coordinate
 	 *            position in the container where to place the unit's label.
 	 */
-	public static void move(final ExplicitContainer container,
-			final BLabel label, final Coordinate coordinate, float factor) {
+	public void move(final ExplicitContainer container, final BLabel label,
+			final Coordinate coordinate, float factor) {
 		if ((factor < 0) || (factor > 1)) {
 			System.out.println("Invalid movement factor.");
 			factor = 1;
@@ -193,7 +199,7 @@ public class ConcurBattles {
 	 *            format: <town name> <x coordinate> <y coordinate>
 	 * @return a mapping of town names with board coordinates.
 	 */
-	private static void parseCities(final Map<String, Coordinate> map,
+	private void parseCities(final Map<String, Coordinate> map,
 			final String conf) {
 		map.clear();
 		final String[] lines = conf.split("\n");
@@ -217,7 +223,7 @@ public class ConcurBattles {
 	 *            white spaces.
 	 * @return a mapping from origin towns to a set of destination towns.
 	 */
-	public static Map<String, Set<String>> parsePaths(final String conf) {
+	public Map<String, Set<String>> parsePaths(final String conf) {
 		final Map<String, Set<String>> result = new HashMap<String, Set<String>>();
 		final String[] lines = conf.split("\n");
 		for (final String line : lines) {
@@ -242,8 +248,7 @@ public class ConcurBattles {
 	 * @param file
 	 *            path to the image for the background.
 	 */
-	public static void setBackground(final ExplicitContainer container,
-			final String file) {
+	public void setBackground(final ExplicitContainer container, final URL file) {
 		container.removeAll();
 		final BLabel background = new BLabel(new ImageIcon(file), BLabel.CENTER);
 		container.add(background, new Rectangle(0, 0, background.getIcon()
@@ -253,11 +258,13 @@ public class ConcurBattles {
 	}
 
 	/** Starts the game loop. */
-	public static void startGame(final ExplicitContainer container,
+	public void startGame(final ExplicitContainer container,
 			final Channel<String> channel, final Map<String, Coordinate> map,
 			final Map<String, BLabel> units) {
-		final ImageIcon goldIcon = new ImageIcon("resources/gold.png");
-		final ImageIcon silverIcon = new ImageIcon("resources/silver.png");
+		final ImageIcon goldIcon = new ImageIcon(
+				Utils.resourceURL("players/gold.png"));
+		final ImageIcon silverIcon = new ImageIcon(
+				Utils.resourceURL("players/silver.png"));
 
 		while (true) {
 			final String message = channel.receive();
@@ -265,7 +272,6 @@ public class ConcurBattles {
 			if (arguments.length == 0) {
 				System.err.println("Invalid message.");
 				continue;
-
 			} else if (arguments.length == 1) {
 				final String unitId = arguments[0];
 				final BLabel unit = units.get(unitId);
@@ -274,39 +280,58 @@ public class ConcurBattles {
 				container.repaint();
 
 			} else {
-				final String unitId = arguments[0];
-				final String destination = arguments[1];
-				final String rate = arguments.length > 2 ? arguments[2] : "1.0";
+				if (arguments[0].equals("gameOver")) {
+					ConcurBattles.this.setBackground(container,
+							Utils.resourceURL("maps/gameover.png"));
 
-				if (map.get(destination) == null) {
-					System.err.println("Unknown destination \"" + destination
-							+ "\" for unit " + unitId);
-					continue;
-				}
+					final String equip = arguments[1];
+					final BLabel icon = new BLabel(
+							equip.startsWith("g") ? goldIcon : silverIcon,
+							BLabel.CENTER);
+					final Rectangle containerBounds = container.getBounds();
+					final Rectangle bounds = new Rectangle(
+							containerBounds.x / 2, containerBounds.y - 100,
+							containerBounds.width, containerBounds.height);
+					container.add(icon, bounds);
+					container.repaint();
+				} else {
 
-				BLabel unit = units.get(unitId);
-				if (unit == null) {
-					unit = new BLabel(unitId.startsWith("g") ? goldIcon
-							: silverIcon, BLabel.CENTER);
-					units.put(unitId, unit);
-					System.out.println("Added unit: " + unitId);
-				}
+					final String unitId = arguments[0];
+					final String destination = arguments[1];
+					final String rate = arguments.length > 2 ? arguments[2]
+							: "1.0";
 
-				float factor;
-				try {
-					factor = Float.parseFloat(rate);
-				} catch (final NumberFormatException e) {
-					System.err.println("Invalid movement factor: " + rate);
-					factor = 1.0f;
-				}
+					if (map.get(destination) == null) {
+						System.err.println("Unknown destination \""
+								+ destination + "\" for unit " + unitId);
+						continue;
+					}
 
-				ConcurBattles.move(container, unit, map.get(destination),
-						factor);
-				if (factor == 1.0f) {
-					System.out.println(unitId + " arrived to " + destination);
+					BLabel unit = units.get(unitId);
+					if (unit == null) {
+						unit = new BLabel(unitId.startsWith("g") ? goldIcon
+								: silverIcon, BLabel.CENTER);
+						units.put(unitId, unit);
+						System.out.println("Added unit: " + unitId);
+					}
+
+					float factor;
+					try {
+						factor = Float.parseFloat(rate);
+					} catch (final NumberFormatException e) {
+						System.err.println("Invalid movement factor: " + rate);
+						factor = 1.0f;
+					}
+
+					this.move(container, unit, map.get(destination), factor);
+					if (factor == 1.0f) {
+						System.out.println(unitId + " arrived to "
+								+ destination);
+					}
 				}
 			}
 		}
+
 	}
 
 }

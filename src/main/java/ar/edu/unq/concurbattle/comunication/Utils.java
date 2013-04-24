@@ -4,8 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+
+import ar.edu.unq.concurbattle.exception.ConcurbattleRuntimeException;
 
 /**
  * This class contains useful functions that simplify the usage of the Java
@@ -22,6 +25,18 @@ public class Utils {
 			return 1;
 		} else {
 			return num + Utils.fibonacci(num - 1);
+		}
+	}
+
+	public static int getLevel(final int battles) {
+		return Utils.getLevel(battles, 1);
+	}
+
+	private static int getLevel(final int battles, final int level) {
+		if (Utils.fibonacci(level) > battles) {
+			return level - 1;
+		} else {
+			return Utils.getLevel(battles, level + 1);
 		}
 	}
 
@@ -75,6 +90,18 @@ public class Utils {
 			throw new RuntimeException(e.getMessage());
 		}
 		return result;
+	}
+
+	public static URL resourceURL(final String path) {
+		return ClassLoader.getSystemResource(path);
+	}
+
+	public static void sleep(final long time) {
+		try {
+			Thread.sleep(time);
+		} catch (final InterruptedException e) {
+			throw new ConcurbattleRuntimeException(e);
+		}
 	}
 
 	public static Class<?>[] toClasses(final Object[] objects) {
