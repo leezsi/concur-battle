@@ -10,13 +10,13 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import ar.edu.unq.concurbattle.comunication.Channel;
 import ar.edu.unq.concurbattle.comunication.Lock;
 import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
 import ar.edu.unq.concurbattle.model.buildings.Castle;
 import ar.edu.unq.concurbattle.model.buildings.Town;
 import ar.edu.unq.concurbattle.model.person.Warrior;
 import ar.edu.unq.tpi.concurbattles.ConcurBattles;
+import ar.edu.unq.tpi.pconc.Channel;
 
 public class GameMap implements Runnable {
 	private static Logger LOG = Logger.getLogger(GameMap.class);
@@ -27,7 +27,7 @@ public class GameMap implements Runnable {
 
 	private Castle goldCastle;
 	private Castle silverCastle;
-	private final List<Town> cities = new ArrayList<>();
+	private final List<Town> cities = new ArrayList<Town>();
 
 	private Lock lock;
 	private final Channel<String> guiChannel;
@@ -82,7 +82,7 @@ public class GameMap implements Runnable {
 
 	public void createMap(final String mapString) {
 		// "1:5=1:2,5;2:3,4;3:4;4:5;5"
-		final Map<String, Town> cities = new HashMap<>();
+		final Map<String, Town> cities = new HashMap<String, Town>();
 
 		final String[] castleData = mapString.split("=");
 		this.createCastles(cities, castleData);

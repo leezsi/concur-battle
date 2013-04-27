@@ -34,7 +34,7 @@ public class Utils {
 
 	private static int getLevel(final int battles, final int level) {
 		if (Utils.fibonacci(level) > battles) {
-			return level - 1;
+			return level;
 		} else {
 			return Utils.getLevel(battles, level + 1);
 		}
@@ -105,7 +105,7 @@ public class Utils {
 	}
 
 	public static Class<?>[] toClasses(final Object[] objects) {
-		final List<Class<?>> list = new LinkedList<>();
+		final List<Class<?>> list = new LinkedList<Class<?>>();
 		if (objects != null) {
 			for (final Object object : objects) {
 				list.add(object.getClass());

@@ -27,6 +27,10 @@ public class Warrior extends Entity implements Runnable {
 	private long level;
 	private int battleWins;
 
+	private int fibonacci2;
+
+	private int fibonacci1;
+
 	public Warrior(final Castle castle, final Integer id, final GameMap map) {
 		this.castle = castle;
 		this.side = castle.getSide();
@@ -34,10 +38,10 @@ public class Warrior extends Entity implements Runnable {
 		this.moveStrategy = MoveStrategy.valueOf(ConstsAndUtils.MOVE_STRATEGY);
 		this.currentPosition = castle;
 		this.map = map;
-		this.lock();
 		this.level = 1;
+		this.fibonacci1 = 1;
+		this.fibonacci2 = 1;
 		this.battleWins = 0;
-		this.release();
 	}
 
 	public void addIn(final Town town) {
@@ -47,18 +51,21 @@ public class Warrior extends Entity implements Runnable {
 
 	public void battleWin() {
 		this.battleWins++;
-		this.level = Utils.getLevel(this.battleWins);
+		final int tmp = this.fibonacci1 + this.fibonacci2;
+		if ((this.fibonacci1 + this.fibonacci1) <= this.battleWins) {
+			this.level++;
+			this.fibonacci1 = this.fibonacci2;
+			this.fibonacci2 = tmp;
+		}
 	}
 
 	public void die() {
-		this.lock();
 		this.isAlive = false;
 		System.out.println("murio " + this.getGUIId() + " level " + this.level);
 		this.map.killWarrior(this);
-		if (this.level > 0) {
+		if (this.level > 1) {
 			this.castle.createWarrior();
 		}
-		this.release();
 	}
 
 	public void fightWith(final Warrior otherWarrior) {
@@ -91,10 +98,9 @@ public class Warrior extends Entity implements Runnable {
 	}
 
 	private long getLevel() {
-		this.lock();
-		final long tmp = this.level;
-		this.release();
-		return tmp;
+
+		return this.level;
+
 	}
 
 	public List<Warrior> getOppositeWarriors(final Town town) {
@@ -136,11 +142,12 @@ public class Warrior extends Entity implements Runnable {
 	}
 
 	public void setCurrentPosition(final Town town) {
-		this.map.lock();
 		this.currentPosition = town;
+		if (!town.isOfMyOwn(this)) {
+			this.getCastle().createWarrior();
+		}
 		town.setSide(this.getSide());
 		this.map.moveWarrior(this, town);
-		this.map.release();
 	}
 
 }

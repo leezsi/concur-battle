@@ -12,9 +12,9 @@ import ar.edu.unq.concurbattle.model.person.Warrior;
 public class Town extends Entity {
 	private static Logger LOG = Logger.getLogger(Town.class);
 	private final String id;
-	private List<Warrior> goldPopulation = new ArrayList<>();
-	private List<Warrior> silverPopulation = new ArrayList<>();
-	private final List<Town> paths = new ArrayList<>();
+	private List<Warrior> goldPopulation = new ArrayList<Warrior>();
+	private List<Warrior> silverPopulation = new ArrayList<Warrior>();
+	private final List<Town> paths = new ArrayList<Town>();
 	private Side side;
 
 	public Town(final String id) {
@@ -41,15 +41,17 @@ public class Town extends Entity {
 	}
 
 	private void checkFight(final Warrior warrior) {
+		this.lock();
 		final List<Warrior> warriors = warrior.getOppositeWarriors(this);
 		for (final Warrior opponent : warriors) {
 			warrior.fightWith(opponent);
 		}
+		this.release();
 	}
 
 	public void gameOver() {
-		this.goldPopulation = new ArrayList<>();
-		this.silverPopulation = new ArrayList<>();
+		this.goldPopulation = new ArrayList<Warrior>();
+		this.silverPopulation = new ArrayList<Warrior>();
 	}
 
 	public List<Warrior> getGoldPopulation() {
@@ -74,6 +76,13 @@ public class Town extends Entity {
 
 	public boolean isCastle() {
 		return false;
+	}
+
+	public boolean isOfMyOwn(final Warrior warrior) {
+		this.lock();
+		final boolean ret = this.getSide().equals(warrior.getSide());
+		this.release();
+		return ret;
 	}
 
 	public void moveDone(final Warrior warrior) {
@@ -106,8 +115,8 @@ public class Town extends Entity {
 	}
 
 	public void setSide(final Side side) {
-		this.side = side;
 		this.lock();
+		this.side = side;
 		Town.LOG.debug(this.getId() + " cambie a " + this.getSide());
 		this.release();
 	}

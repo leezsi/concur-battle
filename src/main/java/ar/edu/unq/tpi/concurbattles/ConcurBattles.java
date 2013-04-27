@@ -8,10 +8,11 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ImageIcon;
+import javax.swing.JPanel;
 
-import ar.edu.unq.concurbattle.comunication.Channel;
 import ar.edu.unq.concurbattle.comunication.Utils;
 import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
+import ar.edu.unq.tpi.pconc.Channel;
 import buoy.event.CommandEvent;
 import buoy.event.WindowClosingEvent;
 import buoy.widget.BFrame;
@@ -188,7 +189,8 @@ public class ConcurBattles {
 		container.add(label,
 				new Rectangle(x, y, label.getIcon().getIconWidth(), label
 						.getIcon().getIconHeight()));
-		container.getComponent().setComponentZOrder(label.getComponent(), 0);
+		final JPanel component = container.getComponent();
+		component.setComponentZOrder(label.getComponent(), 0);
 	}
 
 	/**

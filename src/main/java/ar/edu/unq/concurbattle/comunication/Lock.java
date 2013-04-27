@@ -1,14 +1,15 @@
 package ar.edu.unq.concurbattle.comunication;
 
+import ar.edu.unq.tpi.pconc.Channel;
+
 public class Lock {
 
 	private final Channel<Boolean> lock;
-	private final Channel<Boolean> release;
 
-	public Lock(final int index) {
-		this.lock = new Channel<Boolean>(index);
-		this.release = new Channel<Boolean>(index);
+	public Lock(final int channel) {
+		this.lock = new Channel<Boolean>(channel);
 		this.release();
+
 	}
 
 	public void lock() {
@@ -16,6 +17,6 @@ public class Lock {
 	}
 
 	public void release() {
-		this.release.send(true);
+		this.lock.send(true);
 	}
 }
