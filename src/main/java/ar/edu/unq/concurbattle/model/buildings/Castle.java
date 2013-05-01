@@ -27,8 +27,8 @@ public class Castle extends Town {
 		this.map.newWarrior(warrior);
 		this.lock();
 		Castle.LOG.debug("warrior " + warrior + " creado");
-		this.release();
 		new Thread(warrior).start();
+		this.release();
 	}
 
 	@Override
@@ -48,11 +48,12 @@ public class Castle extends Town {
 	}
 
 	public void killWarriors() {
+		this.lock();
 		final List<Warrior> warriors = this.getSide().getWarriors(this);
 		for (final Warrior warrior : warriors) {
 			warrior.die();
 		}
-
+		this.release();
 	}
 
 	public void removeWarrior(final Warrior warrior) {

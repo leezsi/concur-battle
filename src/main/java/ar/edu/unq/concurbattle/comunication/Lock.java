@@ -1,5 +1,6 @@
 package ar.edu.unq.concurbattle.comunication;
 
+import ar.edu.unq.concurbattle.exception.ExceptionInterceptor;
 import ar.edu.unq.tpi.pconc.Channel;
 
 public class Lock {
@@ -13,7 +14,11 @@ public class Lock {
 	}
 
 	public void lock() {
-		this.lock.receive();
+		try {
+			this.lock.receive();
+		} catch (final Exception e) {
+			throw new ExceptionInterceptor(e);
+		}
 	}
 
 	public void release() {
