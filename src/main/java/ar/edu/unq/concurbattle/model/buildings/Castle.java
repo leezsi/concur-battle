@@ -16,19 +16,20 @@ public class Castle extends Town {
 	private int nextWarriorId = 0;
 
 	public Castle(final Side side, final String id, final GameMap map) {
-		super(id, side);
+		super(id);
 		this.map = map;
+		this.setSide(side);
 	}
 
 	public void createWarrior() {
 		final Warrior warrior = new Warrior(this, this.nextWarriorId++,
 				this.map);
+		this.lock(this);
 		this.addWarrior(warrior);
-		this.map.newWarrior(warrior);
-		this.lock();
-		Castle.LOG.debug("warrior " + warrior + " creado");
 		new Thread(warrior).start();
 		this.release();
+		this.map.newWarrior(warrior);
+		Castle.LOG.debug("warrior " + warrior + " creado");
 	}
 
 	@Override
@@ -48,8 +49,8 @@ public class Castle extends Town {
 	}
 
 	public void killWarriors() {
-		this.lock();
 		final List<Warrior> warriors = this.getSide().getWarriors(this);
+		this.lock(warriors);
 		for (final Warrior warrior : warriors) {
 			warrior.die();
 		}
@@ -60,11 +61,13 @@ public class Castle extends Town {
 		warrior.removeFrom(this);
 	}
 
+	private void setSide(final Side side) {
+		this.side = side;
+	}
+
 	@Override
-	public void setSide(final Side side) {
-		if (!side.equals(this.getSide())) {
-			this.gameOver();
-		}
+	public void setSide(final Warrior warrior) {
+		super.setSide(warrior);
 	}
 
 	public void startGame() {

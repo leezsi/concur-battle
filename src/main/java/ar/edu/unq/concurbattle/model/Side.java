@@ -52,31 +52,6 @@ public enum Side {
 		public void removeFrom(final Warrior warrior, final Town town) {
 			town.removeSilverWarrior(warrior);
 		}
-	},
-	neutral {
-		@Override
-		public void addIn(final Warrior warrior, final Town town) {
-			// method stub
-
-		}
-
-		@Override
-		public List<Warrior> getWarriors(final Town town) {
-			// method stub
-			return null;
-		}
-
-		@Override
-		public Side opposite() {
-			// method stub
-			return null;
-		}
-
-		@Override
-		public void removeFrom(final Warrior warrior, final Town town) {
-			// method stub
-
-		}
 	};
 
 	public abstract void addIn(Warrior warrior, Town town);

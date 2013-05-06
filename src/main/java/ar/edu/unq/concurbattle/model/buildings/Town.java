@@ -15,15 +15,11 @@ public class Town extends Entity {
 	private List<Warrior> goldPopulation = new ArrayList<Warrior>();
 	private List<Warrior> silverPopulation = new ArrayList<Warrior>();
 	private final List<Town> paths = new ArrayList<Town>();
-	private Side side;
+	protected Side side;
 
 	public Town(final String id) {
-		this(id, Side.neutral);
-	}
-
-	protected Town(final String id, final Side side) {
 		this.id = id;
-		this.side = side;
+
 	}
 
 	public void addGoldWarrior(final Warrior warrior) {
@@ -35,13 +31,13 @@ public class Town extends Entity {
 	}
 
 	public void addWarrior(final Warrior warrior) {
-		this.lock();
+		this.lock(this);
 		warrior.addIn(this);
 		this.release();
 	}
 
 	private void checkFight(final Warrior warrior) {
-		this.lock();
+		this.lock(this);
 		final List<Warrior> warriors = warrior.getOppositeWarriors(this);
 		for (final Warrior opponent : warriors) {
 			warrior.fightWith(opponent);
@@ -79,24 +75,18 @@ public class Town extends Entity {
 	}
 
 	public boolean isOfMyOwn(final Warrior warrior) {
-		this.lock();
-		final boolean ret = this.getSide().equals(warrior.getSide());
+		this.lock(this);
+		final Side tmpSide = this.getSide();
+		final boolean ret = (tmpSide != null)
+				&& tmpSide.equals(warrior.getSide());
 		this.release();
 		return ret;
 	}
 
 	public void moveDone(final Warrior warrior) {
-		if (!this.getSide().equals(Side.neutral)) {
-			this.checkFight(warrior);
-		}
+		this.checkFight(warrior);
 		if (warrior.isAlive()) {
 			warrior.setCurrentPosition(this);
-		}
-	}
-
-	public void moving(final Warrior warrior) {
-		if (!this.getSide().equals(Side.neutral)) {
-			this.checkFight(warrior);
 		}
 	}
 
@@ -114,10 +104,13 @@ public class Town extends Entity {
 		this.getSilverPopulation().remove(warrior);
 	}
 
-	public void setSide(final Side side) {
-		this.lock();
-		this.side = side;
-		Town.LOG.debug(this.getId() + " cambie a " + this.getSide());
+	public void setSide(final Warrior warrior) {
+		this.lock(this);
+		if (!warrior.getSide().equals(this.side)) {
+			this.side = warrior.getSide();
+			warrior.createAnotherWarrior();
+		}
+
 		this.release();
 	}
 

@@ -1,5 +1,6 @@
 package ar.edu.unq.concurbattle.model.person;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -59,6 +60,10 @@ public class Warrior extends Entity implements Runnable {
 		}
 	}
 
+	public void createAnotherWarrior() {
+		this.getCastle().createWarrior();
+	}
+
 	public void die() {
 		this.isAlive = false;
 		System.out.println("murio " + this.getGUIId() + " level " + this.level);
@@ -104,7 +109,11 @@ public class Warrior extends Entity implements Runnable {
 	}
 
 	public List<Warrior> getOppositeWarriors(final Town town) {
-		return this.getSide().oponents(town);
+		final Side tmpSide = this.getSide();
+		if (tmpSide == null) {
+			return new ArrayList<Warrior>();
+		}
+		return tmpSide.oponents(town);
 	}
 
 	public Side getSide() {
@@ -128,11 +137,7 @@ public class Warrior extends Entity implements Runnable {
 
 		while (this.isAlive) {
 			Utils.sleep(ConstsAndUtils.DEFAULT_SLEEP);
-			final Town path = this.selectPath();
-			path.moving(this);
-			if (this.isAlive()) {
-				path.moveDone(this);
-			}
+			this.selectPath().moveDone(this);
 		}
 		this.castle.removeWarrior(this);
 	}
@@ -142,12 +147,13 @@ public class Warrior extends Entity implements Runnable {
 	}
 
 	public void setCurrentPosition(final Town town) {
-		this.currentPosition = town;
-		if (!town.isOfMyOwn(this)) {
-			this.getCastle().createWarrior();
+		if (town.isCastle() && !town.equals(this.getCastle())) {
+			this.getCastle().gameOver();
+		} else {
+			this.currentPosition = town;
+			town.setSide(this);
+			this.map.moveWarrior(this, town);
 		}
-		town.setSide(this.getSide());
-		this.map.moveWarrior(this, town);
 	}
 
 }

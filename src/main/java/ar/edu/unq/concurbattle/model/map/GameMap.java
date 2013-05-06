@@ -111,10 +111,9 @@ public class GameMap implements Runnable {
 	}
 
 	public void gameOver(final Castle castle) {
-		this.lock();
 		GameMap.LOG.debug("Gano " + castle);
+		this.lock();
 		this.die();
-		this.guiChannel.send("gameOver " + castle.getSide());
 		this.release();
 	}
 

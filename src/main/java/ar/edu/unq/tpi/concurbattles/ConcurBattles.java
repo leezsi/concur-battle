@@ -1,16 +1,11 @@
 package ar.edu.unq.tpi.concurbattles;
 
 import java.awt.Rectangle;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-
-import ar.edu.unq.concurbattle.comunication.Utils;
 import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
 import ar.edu.unq.tpi.pconc.Channel;
 import buoy.event.CommandEvent;
@@ -20,7 +15,7 @@ import buoy.widget.BLabel;
 import buoy.widget.BMenu;
 import buoy.widget.BMenuBar;
 import buoy.widget.BMenuItem;
-import buoy.widget.ExplicitContainer;
+import buoy.xml.IconResource;
 
 /**
  * This class holds the graphical program which shows the game progress. This
@@ -31,8 +26,6 @@ import buoy.widget.ExplicitContainer;
  * destination must be a town name declared in the map configuration.
  */
 public class ConcurBattles {
-
-	// TODO: standardize background images to the same size
 
 	/** This class represents a coordinate in the map for locating towns. */
 	public static class Coordinate {
@@ -49,121 +42,6 @@ public class ConcurBattles {
 	}
 
 	/**
-	 * Entry point of the program. Requires a command line argument with the id
-	 * of the channel to be used.
-	 */
-	public ConcurBattles() {
-
-		final Channel<String> inputChannel = new Channel<String>(
-				ConstsAndUtils.GUI_SEND_CHANNEL);
-		final Channel<String> outputChannel = new Channel<String>(
-				ConstsAndUtils.GUI_RECEIVE_CHANNEL);
-		final Map<String, Coordinate> map = new HashMap<String, ConcurBattles.Coordinate>();
-
-		final Map<String, BLabel> units = new HashMap<String, BLabel>();
-
-		// window
-		final BFrame window = new BFrame("Concur Battles");
-		window.setResizable(false);
-		window.addEventLink(WindowClosingEvent.class, new Object() {
-			@SuppressWarnings("unused")
-			void processEvent() {
-				System.exit(0);
-			}
-		});
-		window.setBounds(new Rectangle(0, 0, 550, 550));
-
-		final ExplicitContainer container = new ExplicitContainer();
-		window.setContent(container);
-
-		final BMenuBar menu = new BMenuBar();
-		final BMenu scenarioMenu = new BMenu("Scenario");
-
-		final BMenuItem avalon = new BMenuItem("Avalon");
-		avalon.addEventLink(CommandEvent.class, new Object() {
-			@SuppressWarnings("unused")
-			void processEvent() {
-				ConcurBattles.this.setBackground(container,
-						Utils.resourceURL("maps/Avalon.png"));
-				units.clear();
-				ConcurBattles.this
-						.parseCities(map,
-								" 1 235 345 \n 2 290 185 \n 3 355 115 \n 4 220 180 \n 5 165 225 \n");
-				outputChannel.send("1:5=1:2,5;2:3,4;3:4;4:5;5");
-				// outputChannel.send("1:5=1:2,5;2:1,3,4;3:2;4:2,5;5:1,4");
-				// "Avalon: 1 2 5 \n 2 1 3 4 \n 3 2 \n 4 2 5 \n 5 1 4 \n"
-				window.pack();
-			}
-		});
-		scenarioMenu.add(avalon);
-
-		final BMenuItem diaspola = new BMenuItem("Diaspola");
-		diaspola.addEventLink(CommandEvent.class, new Object() {
-			@SuppressWarnings("unused")
-			void processEvent() {
-				ConcurBattles.this.setBackground(container,
-						Utils.resourceURL("maps/Diaspola.png"));
-				units.clear();
-				ConcurBattles.this
-						.parseCities(
-								map,
-								" 1 390 265 \n 2 355 220 \n 3 320 315 \n 4 410 100 \n "
-										+ "5 260 130 \n 6 225 305 \n 7 50 360 \n 8 130 225 \n 9 100 120 \n");
-				outputChannel.send("1:9=1:2,3;2:4,5;3:6;4;5:9;6:7,8;7:8;8:9;9");
-				// "Diaspora: 1 2 3 \n 2 1 4 5 \n 3 1 6 \n 42 \n 5 2 9 \n "
-				// + "6 7 8 \n 7 6 8 \n 8 6 7 9 \n 9 5 8 \n"
-				window.pack();
-			}
-		});
-		scenarioMenu.add(diaspola);
-
-		final BMenuItem sharom = new BMenuItem("Sharom");
-		sharom.addEventLink(CommandEvent.class, new Object() {
-			@SuppressWarnings("unused")
-			void processEvent() {
-				ConcurBattles.this.setBackground(container,
-						Utils.resourceURL("maps/Sharom.png"));
-				units.clear();
-				ConcurBattles.this
-						.parseCities(
-								map,
-								" 1 400 50 \n 2 450 140 \n 3 345 145 \n 4 195 100 \n "
-										+ "5 465 265 \n 6 230 305 \n 7 130 170 \n 8 290 385 \n 9 320 465 \n "
-										+ "10 20 385 \n 11 125 405 \n");
-
-				outputChannel.send("1:11=1:2,3,4;2:5;3:6;4:7;5:8,9;"
-						+ "6:11;7:11;8:9,11;9:11;10");
-				// "Sharom: 1 2 3 4 \n 2 1 5 \n 3 1 6 \n 4 1 7 \n 5 2 8 9 \n "
-				// +
-				// "6 3 11 \n 7 4 11 \n 8 5 9 11 \n 9 5 8 11 \n 10 11 \n 11 6 7 8 9 10 \n"
-				window.pack();
-			}
-		});
-		scenarioMenu.add(sharom);
-
-		// BMenuItem zenobia = new BMenuItem("Zenobia");
-		// zenobia.addEventLink(CommandEvent.class, new Object() {
-		// @SuppressWarnings("unused")
-		// void processEvent() {
-		// setBackground(container, "resources/Zenobia.png");
-		// units.clear();
-		// parseCities(map,
-		// "1 235 345 \n 2 290 185 \n 3 355 115 \n 4 220 180 \n 5 165 225 \n");
-		// outputChannel.send("1 2 5 \n 2 1 3 4 \n 3 2 \n 4 2 5 \n 5 1 4 \n");
-		// window.pack();
-		// }
-		// });
-		// scenarioMenu.add(zenobia);
-
-		menu.add(scenarioMenu);
-		window.setMenuBar(menu);
-
-		window.setVisible(true);
-
-		this.startGame(container, inputChannel, map, units);
-	}
-
-	/**
 	 * Moves a unit's label to a given coordinate.
 	 * 
 	 * @param container
@@ -173,8 +51,8 @@ public class ConcurBattles {
 	 * @param coordinate
 	 *            position in the container where to place the unit's label.
 	 */
-	public void move(final ExplicitContainer container, final BLabel label,
-			final Coordinate coordinate, float factor) {
+	public static void move(final BattleContainer container,
+			final BLabel label, final Coordinate coordinate, float factor) {
 		if ((factor < 0) || (factor > 1)) {
 			System.out.println("Invalid movement factor.");
 			factor = 1;
@@ -189,8 +67,7 @@ public class ConcurBattles {
 		container.add(label,
 				new Rectangle(x, y, label.getIcon().getIconWidth(), label
 						.getIcon().getIconHeight()));
-		final JPanel component = container.getComponent();
-		component.setComponentZOrder(label.getComponent(), 0);
+		container.getComponent().setComponentZOrder(label.getComponent(), 0);
 	}
 
 	/**
@@ -201,7 +78,7 @@ public class ConcurBattles {
 	 *            format: <town name> <x coordinate> <y coordinate>
 	 * @return a mapping of town names with board coordinates.
 	 */
-	private void parseCities(final Map<String, Coordinate> map,
+	private static void parseCities(final Map<String, Coordinate> map,
 			final String conf) {
 		map.clear();
 		final String[] lines = conf.split("\n");
@@ -225,7 +102,7 @@ public class ConcurBattles {
 	 *            white spaces.
 	 * @return a mapping from origin towns to a set of destination towns.
 	 */
-	public Map<String, Set<String>> parsePaths(final String conf) {
+	public static Map<String, Set<String>> parsePaths(final String conf) {
 		final Map<String, Set<String>> result = new HashMap<String, Set<String>>();
 		final String[] lines = conf.split("\n");
 		for (final String line : lines) {
@@ -250,23 +127,26 @@ public class ConcurBattles {
 	 * @param file
 	 *            path to the image for the background.
 	 */
-	public void setBackground(final ExplicitContainer container, final URL file) {
+	public static void setBackground(final BattleContainer container,
+			final String file) {
 		container.removeAll();
-		final BLabel background = new BLabel(new ImageIcon(file), BLabel.CENTER);
+		final BLabel empty = new BLabel();
+		container.add(empty, new Rectangle(0, 0, 0, 0));
+		container.getComponent().setComponentZOrder(empty.getComponent(), 0);
+		final BLabel background = new BLabel(new IconResource(file),
+				BLabel.CENTER);
 		container.add(background, new Rectangle(0, 0, background.getIcon()
 				.getIconWidth(), background.getIcon().getIconHeight()));
 		container.getComponent().setComponentZOrder(background.getComponent(),
-				0);
+				1);
 	}
 
 	/** Starts the game loop. */
-	public void startGame(final ExplicitContainer container,
+	public static void startGame(final BattleContainer container,
 			final Channel<String> channel, final Map<String, Coordinate> map,
 			final Map<String, BLabel> units) {
-		final ImageIcon goldIcon = new ImageIcon(
-				Utils.resourceURL("players/gold.png"));
-		final ImageIcon silverIcon = new ImageIcon(
-				Utils.resourceURL("players/silver.png"));
+		final IconResource goldIcon = new IconResource("players/gold.png");
+		final IconResource silverIcon = new IconResource("players/silver.png");
 
 		while (true) {
 			final String message = channel.receive();
@@ -274,6 +154,7 @@ public class ConcurBattles {
 			if (arguments.length == 0) {
 				System.err.println("Invalid message.");
 				continue;
+
 			} else if (arguments.length == 1) {
 				final String unitId = arguments[0];
 				final BLabel unit = units.get(unitId);
@@ -282,58 +163,137 @@ public class ConcurBattles {
 				container.repaint();
 
 			} else {
-				if (arguments[0].equals("gameOver")) {
-					ConcurBattles.this.setBackground(container,
-							Utils.resourceURL("maps/gameover.png"));
+				final String unitId = arguments[0];
+				final String destination = arguments[1];
+				final String rate = arguments.length > 2 ? arguments[2] : "1.0";
 
-					final String equip = arguments[1];
-					final BLabel icon = new BLabel(
-							equip.startsWith("g") ? goldIcon : silverIcon,
-							BLabel.CENTER);
-					final Rectangle containerBounds = container.getBounds();
-					final Rectangle bounds = new Rectangle(
-							containerBounds.x / 2, containerBounds.y - 100,
-							containerBounds.width, containerBounds.height);
-					container.add(icon, bounds);
-					container.repaint();
-				} else {
+				if (map.get(destination) == null) {
+					System.err.println("Unknown destination \"" + destination
+							+ "\" for unit " + unitId);
+					continue;
+				}
 
-					final String unitId = arguments[0];
-					final String destination = arguments[1];
-					final String rate = arguments.length > 2 ? arguments[2]
-							: "1.0";
+				BLabel unit = units.get(unitId);
+				if (unit == null) {
+					unit = new BLabel(unitId.startsWith("g") ? goldIcon
+							: silverIcon, BLabel.CENTER);
+					units.put(unitId, unit);
+					System.out.println("Added unit: " + unitId);
+				}
 
-					if (map.get(destination) == null) {
-						System.err.println("Unknown destination \""
-								+ destination + "\" for unit " + unitId);
-						continue;
-					}
+				float factor;
+				try {
+					factor = Float.parseFloat(rate);
+				} catch (final NumberFormatException e) {
+					System.err.println("Invalid movement factor: " + rate);
+					factor = 1.0f;
+				}
 
-					BLabel unit = units.get(unitId);
-					if (unit == null) {
-						unit = new BLabel(unitId.startsWith("g") ? goldIcon
-								: silverIcon, BLabel.CENTER);
-						units.put(unitId, unit);
-						System.out.println("Added unit: " + unitId);
-					}
-
-					float factor;
-					try {
-						factor = Float.parseFloat(rate);
-					} catch (final NumberFormatException e) {
-						System.err.println("Invalid movement factor: " + rate);
-						factor = 1.0f;
-					}
-
-					this.move(container, unit, map.get(destination), factor);
-					if (factor == 1.0f) {
-						System.out.println(unitId + " arrived to "
-								+ destination);
-					}
+				ConcurBattles.move(container, unit, map.get(destination),
+						factor);
+				if (factor == 1.0f) {
+					System.out.println(unitId + " arrived to " + destination);
 				}
 			}
 		}
+	}
 
+	public ConcurBattles() {
+		final Channel<String> inputChannel = new Channel<String>(
+				ConstsAndUtils.GUI_SEND_CHANNEL);
+		final Channel<String> outputChannel = new Channel<String>(
+				ConstsAndUtils.GUI_RECEIVE_CHANNEL);
+		final Map<String, Coordinate> map = new HashMap<String, ConcurBattles.Coordinate>();
+		final Map<String, BLabel> units = new HashMap<String, BLabel>();
+
+		// window
+		final BFrame window = new BFrame("Concur Battles");
+		window.setResizable(false);
+		window.addEventLink(WindowClosingEvent.class, new Object() {
+			@SuppressWarnings("unused")
+			void processEvent() {
+				System.exit(0);
+			}
+		});
+		window.setBounds(new Rectangle(0, 0, 550, 550));
+
+		final BattleContainer container = new BattleContainer();
+		window.setContent(container);
+
+		final BMenuBar menu = new BMenuBar();
+		final BMenu scenarioMenu = new BMenu("Scenario");
+
+		final BMenuItem avalon = new BMenuItem("Avalon");
+		avalon.addEventLink(CommandEvent.class, new Object() {
+			@SuppressWarnings("unused")
+			void processEvent() {
+				ConcurBattles.setBackground(container, "maps/Avalon.png");
+				units.clear();
+				ConcurBattles
+						.parseCities(map,
+								" 1 235 345 \n 2 290 185 \n 3 355 115 \n 4 220 180 \n 5 165 225 \n");
+				outputChannel.send("1:5=1:2,5;2:3,4;3:4;4:5;5");
+				window.pack();
+			}
+		});
+		scenarioMenu.add(avalon);
+
+		final BMenuItem diaspola = new BMenuItem("Diaspola");
+		diaspola.addEventLink(CommandEvent.class, new Object() {
+			@SuppressWarnings("unused")
+			void processEvent() {
+				ConcurBattles.setBackground(container, "maps/Diaspola.png");
+				units.clear();
+				ConcurBattles
+						.parseCities(
+								map,
+								" 1 390 265 \n 2 355 220 \n 3 320 315 \n 4 410 100 \n "
+										+ "5 260 130 \n 6 225 305 \n 7 50 360 \n 8 130 225 \n 9 100 120 \n");
+				outputChannel.send("1:9=1:2,3;2:4,5;3:6;4;5:9;6:7,8;7:8;8:9;9");
+				window.pack();
+			}
+		});
+		scenarioMenu.add(diaspola);
+
+		final BMenuItem sharom = new BMenuItem("Sharom");
+		sharom.addEventLink(CommandEvent.class, new Object() {
+			@SuppressWarnings("unused")
+			void processEvent() {
+				ConcurBattles.setBackground(container, "maps/Sharom.png");
+				units.clear();
+				ConcurBattles
+						.parseCities(
+								map,
+								" 1 400 50 \n 2 450 140 \n 3 345 145 \n 4 195 100 \n "
+										+ "5 465 265 \n 6 230 305 \n 7 130 170 \n 8 290 385 \n 9 320 465 \n "
+										+ "10 20 385 \n 11 125 405 \n");
+				outputChannel.send("1:11=1:2,3,4;2:5;3:6;4:7;5:8,9;"
+						+ "6:11;7:11;8:9,11;9:11;10");
+				window.pack();
+			}
+		});
+		scenarioMenu.add(sharom);
+
+		// BMenuItem zenobia = new BMenuItem("Zenobia");
+		// zenobia.addEventLink(CommandEvent.class, new Object() {
+		// @SuppressWarnings("unused")
+		// void processEvent() {
+		// setBackground(container, "resources/Zenobia.png");
+		// units.clear();
+		// parseCities(map,
+		// "1 235 345 \n 2 290 185 \n 3 355 115 \n 4 220 180 \n 5 165 225 \n");
+		// outputChannel.send("1 2 5 \n 2 1 3 4 \n 3 2 \n 4 2 5 \n 5 1 4 \n");
+		// window.pack();
+		// }
+		// });
+		// scenarioMenu.add(zenobia);
+
+		menu.add(scenarioMenu);
+		window.setMenuBar(menu);
+
+		window.setVisible(true);
+
+		ConcurBattles.startGame(container, inputChannel, map, units);
 	}
 
 }
