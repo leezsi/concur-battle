@@ -1,73 +1,38 @@
 package ar.edu.unq.concurbattle.model.buildings;
 
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import ar.edu.unq.concurbattle.model.Side;
 import ar.edu.unq.concurbattle.model.map.GameMap;
 import ar.edu.unq.concurbattle.model.person.Warrior;
 
 public class Castle extends Town {
-	private static Logger LOG = Logger.getLogger(Castle.class);
 
-	private final GameMap map;
+	private int warriorId = 0;
 
-	private int nextWarriorId = 0;
-
-	public Castle(final Side side, final String id, final GameMap map) {
-		super(id);
-		this.map = map;
+	public Castle(final Side side, final String id, final GameMap gameMap) {
+		super(id, gameMap);
 		this.setSide(side);
 	}
 
 	public void createWarrior() {
-		final Warrior warrior = new Warrior(this, this.nextWarriorId++,
-				this.map);
-		this.lock(this);
+		final Warrior warrior = new Warrior(this, this.getWarriorId());
+		warrior.setCurrentPosition(this);
 		this.addWarrior(warrior);
+		this.getGameMap().newWarrior(warrior);
 		new Thread(warrior).start();
-		this.release();
-		this.map.newWarrior(warrior);
-		Castle.LOG.debug("warrior " + warrior + " creado");
 	}
 
-	@Override
-	public void gameOver() {
-		this.killWarriors();
-		super.gameOver();
-		this.map.gameOver(this);
+	private int getWarriorId() {
+		return this.warriorId++;
 	}
 
-	public GameMap getMap() {
-		return this.map;
-	}
+	public void killMe(final Warrior warrior) {
+		this.getGameMap().killWarrior(warrior);
 
-	@Override
-	public boolean isCastle() {
-		return true;
 	}
 
 	public void killWarriors() {
-		final List<Warrior> warriors = this.getSide().getWarriors(this);
-		this.lock(warriors);
-		for (final Warrior warrior : warriors) {
-			warrior.die();
-		}
-		this.release();
-	}
+		// TODO Auto-generated method stub
 
-	public void removeWarrior(final Warrior warrior) {
-		warrior.removeFrom(this);
-	}
-
-	private void setSide(final Side side) {
-		this.side = side;
-	}
-
-	@Override
-	public void setSide(final Warrior warrior) {
-		super.setSide(warrior);
 	}
 
 	public void startGame() {

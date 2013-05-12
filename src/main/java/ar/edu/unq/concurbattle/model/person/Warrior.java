@@ -1,10 +1,7 @@
 package ar.edu.unq.concurbattle.model.person;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import org.apache.log4j.Logger;
 
 import ar.edu.unq.concurbattle.comunication.Utils;
 import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
@@ -12,120 +9,98 @@ import ar.edu.unq.concurbattle.model.Entity;
 import ar.edu.unq.concurbattle.model.Side;
 import ar.edu.unq.concurbattle.model.buildings.Castle;
 import ar.edu.unq.concurbattle.model.buildings.Town;
-import ar.edu.unq.concurbattle.model.map.GameMap;
 
 public class Warrior extends Entity implements Runnable {
 
-	private static Logger LOG = Logger.getLogger(Warrior.class);
-
-	private final Castle castle;
-	private final String id;
+	private final int id;
 	private final Side side;
+	private final Castle castle;
 	private boolean isAlive = true;
 	private final MoveStrategy moveStrategy;
 	private Town currentPosition;
-	private final GameMap map;
-	private long level;
-	private int battleWins;
+	private long level = 1;
+	private int battles;
+	private int fibonacci1 = 1;
+	private int fibonacci2 = 1;
 
-	private int fibonacci2;
-
-	private int fibonacci1;
-
-	public Warrior(final Castle castle, final Integer id, final GameMap map) {
+	public Warrior(final Castle castle, final int id) {
 		this.castle = castle;
 		this.side = castle.getSide();
-		this.id = id.toString();
+		this.id = id;
 		this.moveStrategy = MoveStrategy.valueOf(ConstsAndUtils.MOVE_STRATEGY);
-		this.currentPosition = castle;
-		this.map = map;
-		this.level = 1;
-		this.fibonacci1 = 1;
-		this.fibonacci2 = 1;
-		this.battleWins = 0;
 	}
 
-	public void addIn(final Town town) {
-		this.side.addIn(this, town);
-
+	public void addTo(final Town town) {
+		this.getSide().addWarriorTo(this, town);
 	}
 
-	public void battleWin() {
-		this.battleWins++;
-		final int tmp = this.fibonacci1 + this.fibonacci2;
-		if ((this.fibonacci1 + this.fibonacci1) <= this.battleWins) {
+	private void battleWin() {
+		if ((this.fibonacci1 + this.fibonacci2) <= ++this.battles) {
 			this.level++;
-			this.fibonacci1 = this.fibonacci2;
-			this.fibonacci2 = tmp;
+			final int tmp = this.fibonacci2;
+			this.fibonacci2 = this.fibonacci1 + tmp;
+			this.fibonacci1 = tmp;
 		}
 	}
 
-	public void createAnotherWarrior() {
+	public void createPartner() {
 		this.getCastle().createWarrior();
 	}
 
-	public void die() {
+	private void die() {
 		this.isAlive = false;
-		System.out.println("murio " + this.getGUIId() + " level " + this.level);
-		this.map.killWarrior(this);
 		if (this.level > 1) {
-			this.castle.createWarrior();
+			this.getCastle().createWarrior();
 		}
 	}
 
-	public void fightWith(final Warrior otherWarrior) {
+	public void figthWith(final Warrior opponent) {
+		final long offset = Utils.calculateOffset(this.level, opponent.level);
 		final Random rnd = new Random();
-		final long offset = Utils.calculateOffset(this.getLevel(),
-				otherWarrior.getLevel());
-		if (rnd.nextFloat() > offset) {
-			this.die();
-			otherWarrior.battleWin();
-		} else {
-			otherWarrior.die();
+		if (rnd.nextLong() <= offset) {
 			this.battleWin();
+			opponent.die();
+		} else {
+			opponent.battleWin();
+			this.die();
 		}
+
 	}
 
 	public Castle getCastle() {
 		return this.castle;
 	}
 
-	public Town getCurrentPosition() {
+	public String getCastleId() {
+		return this.getCastle().getId();
+	}
+
+	private Town getCurrentPosition() {
 		return this.currentPosition;
 	}
 
 	public String getGUIId() {
-		return this.getSide() + this.getId();
+		return this.side.toString() + this.id;
 	}
 
-	private String getId() {
-		return this.id;
-	}
-
-	private long getLevel() {
-
-		return this.level;
-
-	}
-
-	public List<Warrior> getOppositeWarriors(final Town town) {
-		final Side tmpSide = this.getSide();
-		if (tmpSide == null) {
-			return new ArrayList<Warrior>();
-		}
-		return tmpSide.oponents(town);
+	public List<Warrior> getOpponentFroms(final Town town) {
+		return this.getSide().getOpponentFroms(town);
 	}
 
 	public Side getSide() {
 		return this.side;
 	}
 
-	public boolean isAlive() {
-		return this.isAlive;
+	private Town getTownToMove() {
+		return this.moveStrategy.getPath(this.getCurrentPosition());
 	}
 
-	public boolean opositeTo(final Warrior warrior) {
-		return !this.side.equals(warrior.side);
+	public boolean is(final Side aSide) {
+		return this.getSide().equals(aSide);
+	}
+
+	public boolean isAlive() {
+		return this.isAlive;
 	}
 
 	public void removeFrom(final Town town) {
@@ -134,26 +109,26 @@ public class Warrior extends Entity implements Runnable {
 
 	@Override
 	public void run() {
-
 		while (this.isAlive) {
-			Utils.sleep(ConstsAndUtils.DEFAULT_SLEEP);
-			this.selectPath().moveDone(this);
-		}
-		this.castle.removeWarrior(this);
-	}
+			this.getCurrentPosition().removeWarrior(this);
+			final Town town = this.getTownToMove();
+			// town.lock();
+			town.warriorArrived(this);
+			// town.release();
 
-	private Town selectPath() {
-		return this.moveStrategy.getPath(this.getCurrentPosition());
+			Utils.sleep(ConstsAndUtils.DEFAULT_SLEEP);
+		}
+		final Town town = this.currentPosition;
+		if (town != null) {
+			town.lock();
+			town.removeWarrior(this);
+			town.release();
+		}
+		this.getCastle().killMe(this);
 	}
 
 	public void setCurrentPosition(final Town town) {
-		if (town.isCastle() && !town.equals(this.getCastle())) {
-			this.getCastle().gameOver();
-		} else {
-			this.currentPosition = town;
-			town.setSide(this);
-			this.map.moveWarrior(this, town);
-		}
+		this.currentPosition = town;
 	}
 
 }

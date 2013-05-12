@@ -3,59 +3,68 @@ package ar.edu.unq.concurbattle.model.buildings;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import ar.edu.unq.concurbattle.model.Entity;
 import ar.edu.unq.concurbattle.model.Side;
+import ar.edu.unq.concurbattle.model.map.GameMap;
 import ar.edu.unq.concurbattle.model.person.Warrior;
 
 public class Town extends Entity {
-	private static Logger LOG = Logger.getLogger(Town.class);
+
 	private final String id;
-	private List<Warrior> goldPopulation = new ArrayList<Warrior>();
-	private List<Warrior> silverPopulation = new ArrayList<Warrior>();
 	private final List<Town> paths = new ArrayList<Town>();
-	protected Side side;
+	private Side side;
+	private final GameMap gameMap;
+	private final List<Warrior> goldWarriors = new ArrayList<Warrior>();
+	private final List<Warrior> silverWarriors = new ArrayList<Warrior>();
 
-	public Town(final String id) {
+	public Town(final String id, final GameMap gameMap) {
 		this.id = id;
-
+		this.gameMap = gameMap;
 	}
 
 	public void addGoldWarrior(final Warrior warrior) {
-		this.goldPopulation.add(warrior);
+		this.goldWarriors.add(warrior);
+	}
+
+	private void addPath(final Town town) {
+		this.paths.add(town);
 	}
 
 	public void addSilverWarrior(final Warrior warrior) {
-		this.silverPopulation.add(warrior);
+		this.silverWarriors.add(warrior);
 	}
 
-	public void addWarrior(final Warrior warrior) {
-		this.lock(this);
-		warrior.addIn(this);
-		this.release();
-	}
-
-	private void checkFight(final Warrior warrior) {
-		this.lock(this);
-		final List<Warrior> warriors = warrior.getOppositeWarriors(this);
-		for (final Warrior opponent : warriors) {
-			warrior.fightWith(opponent);
+	protected void addWarrior(final Warrior warrior) {
+		warrior.addTo(this);
+		if (this.isCapturedBy(warrior)) {
+			warrior.createPartner();
+			this.setSide(warrior.getSide());
 		}
-		this.release();
+		warrior.setCurrentPosition(this);
 	}
 
-	public void gameOver() {
-		this.goldPopulation = new ArrayList<Warrior>();
-		this.silverPopulation = new ArrayList<Warrior>();
+	public Warrior getFirstGold() {
+		return this.goldWarriors.get(0);
 	}
 
-	public List<Warrior> getGoldPopulation() {
-		return this.goldPopulation;
+	public Warrior getFirstSilver() {
+		return this.silverWarriors.get(0);
+	}
+
+	protected GameMap getGameMap() {
+		return this.gameMap;
+	}
+
+	public List<Warrior> getGoldWarriors() {
+		return this.goldWarriors;
 	}
 
 	public String getId() {
 		return this.id;
+	}
+
+	private List<Warrior> getOpponents(final Warrior warrior) {
+		return warrior.getOpponentFroms(this);
 	}
 
 	public List<Town> getPaths() {
@@ -66,52 +75,60 @@ public class Town extends Entity {
 		return this.side;
 	}
 
-	public List<Warrior> getSilverPopulation() {
-		return this.silverPopulation;
+	public List<Warrior> getSilverWarriors() {
+		return this.silverWarriors;
 	}
 
-	public boolean isCastle() {
-		return false;
+	public boolean hasGoldWarrior() {
+		return !this.goldWarriors.isEmpty();
 	}
 
-	public boolean isOfMyOwn(final Warrior warrior) {
-		this.lock(this);
-		final Side tmpSide = this.getSide();
-		final boolean ret = (tmpSide != null)
-				&& tmpSide.equals(warrior.getSide());
-		this.release();
-		return ret;
+	public boolean hasSilverWarrior() {
+		return !this.silverWarriors.isEmpty();
 	}
 
-	public void moveDone(final Warrior warrior) {
-		this.checkFight(warrior);
-		if (warrior.isAlive()) {
-			warrior.setCurrentPosition(this);
+	private boolean isCapturedBy(final Warrior warrior) {
+		if (this.getSide() == null) {
+			return true;
+		} else {
+			return warrior.is(this.getSide());
 		}
+
 	}
 
-	public void pathTo(final Town building) {
-		this.paths.add(building);
-		building.paths.add(this);
+	public void pathTo(final Town town) {
+		this.addPath(town);
+		town.addPath(this);
 
 	}
 
 	public void removeGoldWarrior(final Warrior warrior) {
-		this.getGoldPopulation().remove(warrior);
+		this.goldWarriors.remove(warrior);
 	}
 
 	public void removeSilverWarrior(final Warrior warrior) {
-		this.getSilverPopulation().remove(warrior);
+		this.silverWarriors.remove(warrior);
 	}
 
-	public void setSide(final Warrior warrior) {
-		this.lock(this);
-		if (!warrior.getSide().equals(this.side)) {
-			this.side = warrior.getSide();
-			warrior.createAnotherWarrior();
+	public void removeWarrior(final Warrior warrior) {
+		warrior.removeFrom(this);
+	}
+
+	protected void setSide(final Side side) {
+		this.side = side;
+	}
+
+	public void warriorArrived(final Warrior warrior) {
+		final List<Warrior> opponents = this.getOpponents(warrior);
+		for (final Warrior opponent : opponents) {
+			if (warrior.isAlive()) {
+				warrior.figthWith(opponent);
+			}
+		}
+		if (warrior.isAlive()) {
+			this.addWarrior(warrior);
 		}
 
-		this.release();
 	}
 
 }

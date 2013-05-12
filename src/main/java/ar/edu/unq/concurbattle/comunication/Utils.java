@@ -20,26 +20,6 @@ public class Utils {
 		return attack / (attack + deffence);
 	}
 
-	public static int fibonacci(final int num) {
-		if (num == 0) {
-			return 1;
-		} else {
-			return num + Utils.fibonacci(num - 1);
-		}
-	}
-
-	public static int getLevel(final int battles) {
-		return Utils.getLevel(battles, 1);
-	}
-
-	private static int getLevel(final int battles, final int level) {
-		if (Utils.fibonacci(level) > battles) {
-			return level;
-		} else {
-			return Utils.getLevel(battles, level + 1);
-		}
-	}
-
 	/**
 	 * Parses a <code>String</code> containing the representation of an integer
 	 * number in base 10.

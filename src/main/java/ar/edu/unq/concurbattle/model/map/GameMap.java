@@ -9,8 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
+import ar.edu.unq.concurbattle.comunication.ChannelManager;
 import ar.edu.unq.concurbattle.comunication.Lock;
+import ar.edu.unq.concurbattle.comunication.Utils;
 import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
 import ar.edu.unq.concurbattle.model.buildings.Castle;
 import ar.edu.unq.concurbattle.model.buildings.Town;
@@ -19,9 +22,12 @@ import ar.edu.unq.tpi.concurbattles.ConcurBattles;
 import ar.edu.unq.tpi.pconc.Channel;
 
 public class GameMap implements Runnable {
+
 	private static Logger LOG = Logger.getLogger(GameMap.class);
 
 	public static void main(final String[] args) {
+		PropertyConfigurator.configure(Utils
+				.resourceURL(ConstsAndUtils.CONFIG_FILE));
 		new Thread(new GameMap()).start();
 	}
 
@@ -73,7 +79,7 @@ public class GameMap implements Runnable {
 			final String[] data = toCreate.split(":");
 			final String id = data[0];
 			if (!cities.containsKey(id)) {
-				final Town town = new Town(id);
+				final Town town = new Town(id, this);
 				cities.put(id, town);
 				this.cities.add(town);
 			}
@@ -110,7 +116,7 @@ public class GameMap implements Runnable {
 		}
 	}
 
-	public void gameOver(final Castle castle) {
+	public void gameOver(final Town castle) {
 		GameMap.LOG.debug("Gano " + castle);
 		this.lock();
 		this.die();
@@ -118,7 +124,9 @@ public class GameMap implements Runnable {
 	}
 
 	public void killWarrior(final Warrior warrior) {
-		this.guiChannel.send(warrior.getGUIId());
+		final String guiId = warrior.getGUIId();
+		System.out.println("MURIO " + guiId);
+		this.guiChannel.send(guiId);
 	}
 
 	public void lock() {
@@ -130,8 +138,7 @@ public class GameMap implements Runnable {
 	}
 
 	public void newWarrior(final Warrior warrior) {
-		this.guiChannel.send(warrior.getGUIId() + " "
-				+ warrior.getCastle().getId());
+		this.guiChannel.send(warrior.getGUIId() + " " + warrior.getCastleId());
 	}
 
 	public void release() {
@@ -140,12 +147,17 @@ public class GameMap implements Runnable {
 
 	@Override
 	public void run() {
-		this.lock = new Lock(ConstsAndUtils.getLockID());
+		ChannelManager.getServer(ConstsAndUtils.SERVER_RECEIVE_CHANNEL,
+				ConstsAndUtils.SERVER_SEND_CHANNEL,
+				ConstsAndUtils.SERVER_LOCK_CHANNEL,
+				ConstsAndUtils.FIRST_CLIENT_CHANNEL);
+		this.lock = new Lock();
 		while (true) {
 		}
 	}
 
 	public void start() {
+		GameMap.LOG.error("Juego nuevo");
 		this.goldCastle.startGame();
 		this.silverCastle.startGame();
 	}
