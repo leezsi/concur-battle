@@ -7,6 +7,7 @@ public abstract class Entity {
 
 	public Entity() {
 		this.lock = new Lock();
+		this.lock.release();
 	}
 
 	public void lock() {
@@ -16,4 +17,5 @@ public abstract class Entity {
 	public void release() {
 		this.lock.release();
 	}
+
 }

@@ -8,12 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-
 import ar.edu.unq.concurbattle.comunication.ChannelManager;
-import ar.edu.unq.concurbattle.comunication.Lock;
-import ar.edu.unq.concurbattle.comunication.Utils;
 import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
 import ar.edu.unq.concurbattle.model.buildings.Castle;
 import ar.edu.unq.concurbattle.model.buildings.Town;
@@ -23,11 +18,8 @@ import ar.edu.unq.tpi.pconc.Channel;
 
 public class GameMap implements Runnable {
 
-	private static Logger LOG = Logger.getLogger(GameMap.class);
-
 	public static void main(final String[] args) {
-		PropertyConfigurator.configure(Utils
-				.resourceURL(ConstsAndUtils.CONFIG_FILE));
+
 		new Thread(new GameMap()).start();
 	}
 
@@ -35,7 +27,6 @@ public class GameMap implements Runnable {
 	private Castle silverCastle;
 	private final List<Town> cities = new ArrayList<Town>();
 
-	private Lock lock;
 	private final Channel<String> guiChannel;
 
 	public GameMap() {
@@ -50,11 +41,11 @@ public class GameMap implements Runnable {
 			public void run() {
 				final Channel<String> channel = new Channel<String>(
 						ConstsAndUtils.GUI_RECEIVE_CHANNEL);
+				final Channel<String> serverChannel = new Channel<String>(
+						ConstsAndUtils.GUI_SERVER_CHANNEL);
 				while (true) {
 					final String maps = channel.receive();
-					GameMap.this.die();
-					GameMap.this.createMap(maps);
-					GameMap.this.start();
+					serverChannel.send(maps);
 				}
 			}
 		}.start();
@@ -117,20 +108,15 @@ public class GameMap implements Runnable {
 	}
 
 	public void gameOver(final Town castle) {
-		GameMap.LOG.debug("Gano " + castle);
-		this.lock();
+		System.out.println("Gano " + castle.getSide());
 		this.die();
-		this.release();
+
 	}
 
 	public void killWarrior(final Warrior warrior) {
 		final String guiId = warrior.getGUIId();
 		System.out.println("MURIO " + guiId);
 		this.guiChannel.send(guiId);
-	}
-
-	public void lock() {
-		this.lock.lock();
 	}
 
 	public void moveWarrior(final Warrior person, final Town building) {
@@ -141,23 +127,25 @@ public class GameMap implements Runnable {
 		this.guiChannel.send(warrior.getGUIId() + " " + warrior.getCastleId());
 	}
 
-	public void release() {
-		this.lock.release();
-	}
-
 	@Override
 	public void run() {
 		ChannelManager.getServer(ConstsAndUtils.SERVER_RECEIVE_CHANNEL,
 				ConstsAndUtils.SERVER_SEND_CHANNEL,
 				ConstsAndUtils.SERVER_LOCK_CHANNEL,
 				ConstsAndUtils.FIRST_CLIENT_CHANNEL);
-		this.lock = new Lock();
+
+		final Channel<String> serverChannel = new Channel<String>(
+				ConstsAndUtils.GUI_SERVER_CHANNEL);
 		while (true) {
+			final String maps = serverChannel.receive();
+			this.die();
+			this.createMap(maps);
+			this.start();
 		}
 	}
 
 	public void start() {
-		GameMap.LOG.error("Juego nuevo");
+		System.out.println("Juego nuevo");
 		this.goldCastle.startGame();
 		this.silverCastle.startGame();
 	}

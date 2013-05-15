@@ -1,6 +1,5 @@
 package ar.edu.unq.concurbattle.model.person;
 
-import java.util.List;
 import java.util.Random;
 
 import ar.edu.unq.concurbattle.comunication.Utils;
@@ -9,6 +8,7 @@ import ar.edu.unq.concurbattle.model.Entity;
 import ar.edu.unq.concurbattle.model.Side;
 import ar.edu.unq.concurbattle.model.buildings.Castle;
 import ar.edu.unq.concurbattle.model.buildings.Town;
+import ar.edu.unq.concurbattle.model.map.GameMap;
 
 public class Warrior extends Entity implements Runnable {
 
@@ -22,16 +22,17 @@ public class Warrior extends Entity implements Runnable {
 	private int battles;
 	private int fibonacci1 = 1;
 	private int fibonacci2 = 1;
+	private boolean gameOver;
+	private final GameMap map;
 
-	public Warrior(final Castle castle, final int id) {
+	public Warrior(final Castle castle, final int id, final GameMap map) {
 		this.castle = castle;
+		this.currentPosition = castle;
 		this.side = castle.getSide();
 		this.id = id;
 		this.moveStrategy = MoveStrategy.valueOf(ConstsAndUtils.MOVE_STRATEGY);
-	}
-
-	public void addTo(final Town town) {
-		this.getSide().addWarriorTo(this, town);
+		this.map = map;
+		map.newWarrior(this);
 	}
 
 	private void battleWin() {
@@ -43,6 +44,10 @@ public class Warrior extends Entity implements Runnable {
 		}
 	}
 
+	public boolean capture(final Town town) {
+		return !this.getSide().capture(town);
+	}
+
 	public void createPartner() {
 		this.getCastle().createWarrior();
 	}
@@ -50,21 +55,29 @@ public class Warrior extends Entity implements Runnable {
 	private void die() {
 		this.isAlive = false;
 		if (this.level > 1) {
-			this.getCastle().createWarrior();
+			this.createPartner();
 		}
 	}
 
 	public void figthWith(final Warrior opponent) {
-		final long offset = Utils.calculateOffset(this.level, opponent.level);
-		final Random rnd = new Random();
-		if (rnd.nextLong() <= offset) {
-			this.battleWin();
-			opponent.die();
-		} else {
-			opponent.battleWin();
-			this.die();
+		if (!this.isPartner(opponent)) {// si no es compañero peleo
+			final long offset = Utils.calculateOffset(this.level,
+					opponent.level);
+			final Random rnd = new Random();
+			if (rnd.nextLong() <= offset) {
+				this.battleWin();
+				opponent.die();
+			} else {
+				opponent.battleWin();
+				this.die();
+			}
 		}
 
+	}
+
+	public void gameOver() {
+		this.isAlive = false;
+		this.gameOver = true;
 	}
 
 	public Castle getCastle() {
@@ -83,10 +96,6 @@ public class Warrior extends Entity implements Runnable {
 		return this.side.toString() + this.id;
 	}
 
-	public List<Warrior> getOpponentFroms(final Town town) {
-		return this.getSide().getOpponentFroms(town);
-	}
-
 	public Side getSide() {
 		return this.side;
 	}
@@ -103,32 +112,33 @@ public class Warrior extends Entity implements Runnable {
 		return this.isAlive;
 	}
 
-	public void removeFrom(final Town town) {
-		this.getSide().removeFrom(this, town);
+	private boolean isPartner(final Warrior opponent) {
+		return this.getSide().equals(opponent.getSide());
 	}
 
 	@Override
 	public void run() {
 		while (this.isAlive) {
+			this.lock();
 			this.getCurrentPosition().removeWarrior(this);
 			final Town town = this.getTownToMove();
-			// town.lock();
 			town.warriorArrived(this);
-			// town.release();
-
+			this.release();
 			Utils.sleep(ConstsAndUtils.DEFAULT_SLEEP);
 		}
-		final Town town = this.currentPosition;
-		if (town != null) {
-			town.lock();
+		this.map.killWarrior(this);
+		if (!this.gameOver) {
+			final Town town = this.currentPosition;
 			town.removeWarrior(this);
-			town.release();
+			this.getCastle().kill(this);
 		}
-		this.getCastle().killMe(this);
 	}
 
 	public void setCurrentPosition(final Town town) {
+		this.currentPosition.removeWarrior(this);
 		this.currentPosition = town;
+		town.addWarrior(this);
+		this.map.moveWarrior(this, town);
 	}
 
 }

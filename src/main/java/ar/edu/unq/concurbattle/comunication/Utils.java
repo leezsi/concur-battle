@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.LinkedList;
-import java.util.List;
 
 import ar.edu.unq.concurbattle.exception.ConcurbattleRuntimeException;
 
@@ -82,16 +80,6 @@ public class Utils {
 		} catch (final InterruptedException e) {
 			throw new ConcurbattleRuntimeException(e);
 		}
-	}
-
-	public static Class<?>[] toClasses(final Object[] objects) {
-		final List<Class<?>> list = new LinkedList<Class<?>>();
-		if (objects != null) {
-			for (final Object object : objects) {
-				list.add(object.getClass());
-			}
-		}
-		return list.toArray(new Class<?>[list.size()]);
 	}
 
 }
