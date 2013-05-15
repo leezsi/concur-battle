@@ -28,6 +28,7 @@ public class GameMap implements Runnable {
 	private final List<Town> cities = new ArrayList<Town>();
 
 	private final Channel<String> guiChannel;
+	private boolean gameOver;
 
 	public GameMap() {
 		new Thread() {
@@ -109,8 +110,13 @@ public class GameMap implements Runnable {
 
 	public void gameOver(final Town castle) {
 		System.out.println("Gano " + castle.getSide());
+		this.gameOver = true;
 		this.die();
 
+	}
+
+	public boolean isGameOver() {
+		return this.gameOver;
 	}
 
 	public void killWarrior(final Warrior warrior) {
@@ -146,6 +152,7 @@ public class GameMap implements Runnable {
 
 	public void start() {
 		System.out.println("Juego nuevo");
+		this.gameOver = false;
 		this.goldCastle.startGame();
 		this.silverCastle.startGame();
 	}

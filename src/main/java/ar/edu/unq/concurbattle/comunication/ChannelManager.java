@@ -2,6 +2,7 @@ package ar.edu.unq.concurbattle.comunication;
 
 import java.io.Serializable;
 
+import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
 import ar.edu.unq.concurbattle.exception.ConcurbattleRuntimeException;
 import ar.edu.unq.tpi.pconc.Channel;
 
@@ -124,11 +125,10 @@ public class ChannelManager {
 		}
 	}
 
-	public static <R extends Serializable> Channel<R> getChannel(
-			final int sendChannelId, final int receiveChannelId,
-			final int lockChannelId) {
-		return new ChannelClient<R>(receiveChannelId, sendChannelId,
-				lockChannelId).getChannel();
+	public static <R extends Serializable> Channel<R> getChannel() {
+		return new ChannelClient<R>(ConstsAndUtils.SERVER_RECEIVE_CHANNEL,
+				ConstsAndUtils.SERVER_SEND_CHANNEL,
+				ConstsAndUtils.SERVER_LOCK_CHANNEL).getChannel();
 	}
 
 	public static ChannelServer getServer(final int receiveChannelId,

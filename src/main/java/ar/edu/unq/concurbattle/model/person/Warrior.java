@@ -122,6 +122,7 @@ public class Warrior extends Entity implements Runnable {
 			this.lock();
 			this.getCurrentPosition().removeWarrior(this);
 			final Town town = this.getTownToMove();
+
 			town.warriorArrived(this);
 			this.release();
 			Utils.sleep(ConstsAndUtils.DEFAULT_SLEEP);
