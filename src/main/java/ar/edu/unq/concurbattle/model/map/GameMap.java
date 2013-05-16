@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ar.edu.unq.concurbattle.comunication.Channel;
 import ar.edu.unq.concurbattle.comunication.Lock;
 import ar.edu.unq.concurbattle.comunication.Utils;
 import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
@@ -16,6 +15,7 @@ import ar.edu.unq.concurbattle.model.buildings.Castle;
 import ar.edu.unq.concurbattle.model.buildings.Town;
 import ar.edu.unq.concurbattle.model.person.Warrior;
 import ar.edu.unq.tpi.concurbattles.ConcurBattles;
+import ar.edu.unq.tpi.pconc.Channel;
 
 public class GameMap implements Runnable {
 
