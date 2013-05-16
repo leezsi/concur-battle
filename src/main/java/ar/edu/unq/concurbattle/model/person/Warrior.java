@@ -114,10 +114,7 @@ public class Warrior extends Entity implements Runnable {
 	@Override
 	public void run() {
 		while (this.isAlive && !this.map.isGameOver()) {
-			final Town cp = this.getCurrentPosition();
-			cp.lock();
-			cp.removeWarrior(this);
-			cp.release();
+			this.getCurrentPosition().removeWarrior(this);
 			if (!this.map.isGameOver()) {
 				final Town town = this.getTownToMove();
 				town.warriorArrived(this);
