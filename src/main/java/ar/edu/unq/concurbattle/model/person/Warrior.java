@@ -22,7 +22,7 @@ public class Warrior extends Entity implements Runnable {
 	private int battles;
 	private int fibonacci1 = 1;
 	private int fibonacci2 = 1;
-	private boolean gameOver;
+
 	private final GameMap map;
 
 	public Warrior(final Castle castle, final int id, final GameMap map) {
@@ -54,7 +54,7 @@ public class Warrior extends Entity implements Runnable {
 
 	private void die() {
 		this.isAlive = false;
-		if (this.level > 1) {
+		if ((this.level > 1) && !this.map.isGameOver()) {
 			this.createPartner();
 		}
 	}
@@ -73,11 +73,6 @@ public class Warrior extends Entity implements Runnable {
 			}
 		}
 
-	}
-
-	public void gameOver() {
-		this.isAlive = false;
-		this.gameOver = true;
 	}
 
 	public Castle getCastle() {
@@ -122,16 +117,15 @@ public class Warrior extends Entity implements Runnable {
 			this.lock();
 			this.getCurrentPosition().removeWarrior(this);
 			final Town town = this.getTownToMove();
-
-			town.warriorArrived(this);
+			if (!this.map.isGameOver()) {
+				town.warriorArrived(this);
+			}
 			this.release();
-			Utils.sleep(ConstsAndUtils.DEFAULT_SLEEP);
 		}
 		this.map.killWarrior(this);
-		if (!this.gameOver) {
+		if (!this.map.isGameOver()) {
 			final Town town = this.currentPosition;
 			town.removeWarrior(this);
-			this.getCastle().kill(this);
 		}
 	}
 

@@ -57,7 +57,7 @@ public class ConstsAndUtils {
 					.getInt("lock.channel.lock");
 
 			ConstsAndUtils.DEFAULT_SLEEP = //
-			ConstsAndUtils.CONFIGS.getInt("move.delay");
+			ConstsAndUtils.CONFIGS.getLong("move.delay");
 			ConstsAndUtils.MOVE_STRATEGY = //
 			ConstsAndUtils.CONFIGS.getString("person.move.strategy");
 		} catch (final ConfigurationException e) {

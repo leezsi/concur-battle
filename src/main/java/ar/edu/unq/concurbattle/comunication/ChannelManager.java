@@ -8,7 +8,9 @@ import ar.edu.unq.tpi.pconc.Channel;
 
 public class ChannelManager {
 	public static class ChannelClient<T extends Serializable> {
-
+		static {
+			ChannelManager.getServer();
+		}
 		private final Channel<ChannelManagerProtocol> sendChannel;
 		private final Channel<Boolean> lock;
 		private final Channel<ChannelManagerProtocol> receiveChannel;
@@ -131,10 +133,10 @@ public class ChannelManager {
 				ConstsAndUtils.SERVER_LOCK_CHANNEL).getChannel();
 	}
 
-	public static ChannelServer getServer(final int receiveChannelId,
-			final int sendChannelId, final int lockChannelId,
-			final int firstChannel) {
-		return new ChannelServer(receiveChannelId, sendChannelId,
-				lockChannelId, firstChannel);
+	public static ChannelServer getServer() {
+		return new ChannelServer(ConstsAndUtils.SERVER_RECEIVE_CHANNEL,
+				ConstsAndUtils.SERVER_SEND_CHANNEL,
+				ConstsAndUtils.SERVER_LOCK_CHANNEL,
+				ConstsAndUtils.FIRST_CLIENT_CHANNEL);
 	}
 }

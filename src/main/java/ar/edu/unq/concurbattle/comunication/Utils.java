@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+import ar.edu.unq.concurbattle.configuration.ConstsAndUtils;
 import ar.edu.unq.concurbattle.exception.ConcurbattleRuntimeException;
 
 /**
@@ -74,10 +75,11 @@ public class Utils {
 		return ClassLoader.getSystemResource(path);
 	}
 
-	public static void sleep(final long time) {
+	public static void sleep() {
 		try {
-			Thread.sleep(time);
+			Thread.sleep(ConstsAndUtils.DEFAULT_SLEEP);
 		} catch (final InterruptedException e) {
+			e.printStackTrace();
 			throw new ConcurbattleRuntimeException(e);
 		}
 	}
