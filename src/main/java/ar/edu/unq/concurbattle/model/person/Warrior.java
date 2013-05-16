@@ -113,27 +113,31 @@ public class Warrior extends Entity implements Runnable {
 
 	@Override
 	public void run() {
-		while (this.isAlive) {
-			this.lock();
-			this.getCurrentPosition().removeWarrior(this);
-			final Town town = this.getTownToMove();
+		while (this.isAlive && !this.map.isGameOver()) {
+			final Town cp = this.getCurrentPosition();
+			cp.lock();
+			cp.removeWarrior(this);
+			cp.release();
 			if (!this.map.isGameOver()) {
+				final Town town = this.getTownToMove();
 				town.warriorArrived(this);
 			}
-			this.release();
 		}
 		this.map.killWarrior(this);
 		if (!this.map.isGameOver()) {
-			final Town town = this.currentPosition;
-			town.removeWarrior(this);
+			this.currentPosition.removeWarrior(this);
 		}
 	}
 
 	public void setCurrentPosition(final Town town) {
-		this.currentPosition.removeWarrior(this);
+		if (!this.map.isGameOver()) {
+			this.currentPosition.removeWarrior(this);
+		}
 		this.currentPosition = town;
-		town.addWarrior(this);
-		this.map.moveWarrior(this, town);
+		if (!this.map.isGameOver()) {
+			town.addWarrior(this);
+			this.map.moveWarrior(this, town);
+		}
 	}
 
 }

@@ -104,9 +104,9 @@ public class GameMap implements Runnable {
 	}
 
 	public void gameOver(final Town castle) {
+		this.lock.lock();
 		System.out.println("Gano " + castle.getSide());
 		System.out.flush();
-		this.lock.lock();
 		this.gameOver = true;
 		this.lock.release();
 	}
@@ -126,12 +126,20 @@ public class GameMap implements Runnable {
 		this.sendToGUI(guiId);
 	}
 
+	public void lock() {
+		this.lock.lock();
+	}
+
 	public void moveWarrior(final Warrior person, final Town building) {
 		this.sendToGUI(person.getGUIId() + " " + building.getId());
 	}
 
 	public void newWarrior(final Warrior warrior) {
 		this.moveWarrior(warrior, warrior.getCastle());
+	}
+
+	public void release() {
+		this.lock.release();
 	}
 
 	@Override
@@ -152,9 +160,9 @@ public class GameMap implements Runnable {
 	}
 
 	public void start() {
+		this.lock.lock();
 		System.out.println("Juego nuevo");
 		System.out.flush();
-		this.lock.lock();
 		this.gameOver = false;
 		this.lock.release();
 		this.goldCastle.startGame();
